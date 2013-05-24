@@ -6,6 +6,19 @@ using System.Text;
 namespace TreeAncestor {
     class Program {
         static void Main(string[] args) {
+            // Building the following tree structure
+            /*
+             *                  a
+             *                 / \
+             *                /   \
+             *               /     \
+             *              b       c
+             *             / \     / \
+             *            d   e   f   g
+             *              / | \ 
+             *             h  i  j
+             * 
+             */
             Node h = new Node("h");
             Node i = new Node("i");
             Node j = new Node("j");
@@ -33,6 +46,8 @@ namespace TreeAncestor {
             tree.AddChild(c);
 
             Finder ancestorFinder = new Finder();
+
+            // find the lowest common ancestor between nodes "d" and "j"
             String result = ancestorFinder.FindAncestor(tree, "d", "j");
             if(result != "b")
                 Console.WriteLine("For d and j, it DID not find b :(");
@@ -59,6 +74,8 @@ namespace TreeAncestor {
             var xPath = CreateNodePath(xNode);
             var yPath = CreateNodePath(yNode);
 
+            // since we want to find the first occurence, worst case is O(m*n) which can be O(n*n) or O(n^2). 
+            // Best case it could be O(1) where we have a match on the first node of each array, e.g. the root node
             foreach(string value in xPath){
                 foreach(string yValue in yPath) {
                     if(value == yValue)
@@ -70,6 +87,11 @@ namespace TreeAncestor {
         }
 
 
+        /// <summary>
+        /// Create the path from the found node up to the root
+        /// </summary>
+        /// <param name="node">The node that we want to find the path from</param>
+        /// <returns>A list of strings (the values of the nodes)</returns>
         private List<String> CreateNodePath(Node node) {
             List<String> pathList = new List<String>();
             Node currentNode = node;
@@ -84,24 +106,21 @@ namespace TreeAncestor {
         /// <summary>
         /// Finds the specified node equal to the value
         /// </summary>
-        /// <param name="tree"></param>
-        /// <param name="value"></param>
-        /// <returns></returns>
+        /// <param name="node">The node we are currently seeking through</param>
+        /// <param name="value">The value we are searching for</param>
+        /// <returns>The node that has the same value or null</returns>
         private Node FindNode(Node node, string value) {
             if(node.Value == value)
                 return node;
 
+            // search all the children and try to find the node. If it returns null, then we hit a leaf
+            // if it DOESNT return null, then we found the node we want, so shoot it up the stack
+            // note: this could cause overflow errors for a huge tree since we're using recursion
             foreach(Node child in node.Children) {
                 Node returned = FindNode(child, value);
                 if(returned != null)
                     return returned;
             }
-            //for(int i = 0; i < node.Children.Count - 1; i++) {
-            //    Node childNode = node.Children.ElementAt(i);
-            //    Node returned = FindNode(childNode, value);
-            //    if(returned != null)
-            //        return returned;
-            //}
 
             return null;
         }
@@ -122,10 +141,10 @@ namespace TreeAncestor {
         /// <summary>
         /// Adds a child to the children of this node
         /// </summary>
-        /// <param name="node"></param>
+        /// <param name="node">The node to add to the children of this node</param>
         public void AddChild(Node node) {
-            node.Parent = this;
-            this.Children.Add(node);
+            node.Parent = this; // assign the parent since it's now a child of this node
+            this.Children.Add(node); // and add it to the list of children
         }
     }
 }
